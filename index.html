@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transformers Beyond Text</title>
+<meta name="description" content="Understanding the universal modeling engine — from language to weather to markets. How transformer architectures are reshaping every industry and the infrastructure they demand.">
+<style>
+/* ═══════ RESET & BASE ═══════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy: #0f1b2d;
+  --navy-mid: #162236;
+  --navy-light: #1d2d45;
+  --slate: #2a3f5f;
+  --steel: #64748b;
+  --silver: #94a3b8;
+  --pearl: #cbd5e1;
+  --ghost: #e2e8f0;
+  --white: #f8fafc;
+  --pure: #ffffff;
+  --accent: #3b82f6;
+  --accent-bright: #60a5fa;
+  --accent-glow: #93c5fd;
+  --teal: #14b8a6;
+  --teal-dim: #0d9488;
+  --amber: #f59e0b;
+  --rose: #f43f5e;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+  --font-serif: 'Georgia', 'Times New Roman', serif;
+}
+html { scroll-behavior: smooth; font-size: 16px; }
+body {
+  font-family: var(--font-sans);
+  background: var(--navy);
+  color: var(--pearl);
+  line-height: 1.7;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent-bright); text-decoration: none; transition: color 0.2s; }
+a:hover { color: var(--accent-glow); }
+img { max-width: 100%; display: block; }
+::selection { background: var(--accent); color: var(--pure); }
+
+/* ═══════ TYPOGRAPHY ═══════ */
+h1, h2, h3, h4, h5 { color: var(--pure); line-height: 1.25; font-weight: 600; }
+h1 { font-size: clamp(2rem, 5vw, 3.5rem); letter-spacing: -0.03em; }
+h2 { font-size: clamp(1.5rem, 3.5vw, 2.25rem); letter-spacing: -0.02em; }
+h3 { font-size: clamp(1.15rem, 2vw, 1.5rem); letter-spacing: -0.01em; }
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent-bright);
+  margin-bottom: 0.75rem;
+  display: block;
+}
+.lead { font-size: 1.15rem; color: var(--silver); line-height: 1.8; max-width: 680px; }
+
+/* ═══════ LAYOUT ═══════ */
+.container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+.container-narrow { max-width: 800px; margin: 0 auto; padding: 0 1.5rem; }
+section { padding: 6rem 0; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+@media (max-width: 900px) {
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  section { padding: 4rem 0; }
+}
+
+/* ═══════ NAV ═══════ */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  background: rgba(15, 27, 45, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.08);
+  transition: all 0.3s;
+}
+nav.scrolled { background: rgba(15, 27, 45, 0.97); border-bottom-color: rgba(59, 130, 246, 0.15); }
+.nav-inner {
+  max-width: 1200px; margin: 0 auto; padding: 0 1.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 64px;
+}
+.nav-brand {
+  font-weight: 700; font-size: 1.05rem; color: var(--pure);
+  display: flex; align-items: center; gap: 0.6rem;
+}
+.nav-brand svg { width: 28px; height: 28px; }
+.nav-links { display: flex; gap: 0.25rem; align-items: center; }
+.nav-links a {
+  color: var(--silver); font-size: 0.85rem; padding: 0.4rem 0.75rem;
+  border-radius: 6px; transition: all 0.2s; font-weight: 500;
+}
+.nav-links a:hover { color: var(--pure); background: rgba(255,255,255,0.05); }
+.nav-links a.active { color: var(--accent-bright); }
+.nav-cta {
+  background: var(--accent); color: var(--pure) !important; padding: 0.45rem 1rem !important;
+  border-radius: 6px !important; font-weight: 600 !important; font-size: 0.8rem !important;
+  letter-spacing: 0.02em;
+}
+.nav-cta:hover { background: #2563eb !important; }
+.mobile-toggle { display: none; background: none; border: none; color: var(--pure); cursor: pointer; padding: 0.5rem; }
+@media (max-width: 900px) {
+  .nav-links { display: none; }
+  .nav-links.open {
+    display: flex; flex-direction: column; position: absolute;
+    top: 64px; left: 0; right: 0; background: var(--navy);
+    border-bottom: 1px solid var(--navy-light); padding: 1rem;
+  }
+  .mobile-toggle { display: block; }
+}
+
+/* ═══════ HERO ═══════ */
+.hero {
+  min-height: 100vh; display: flex; align-items: center;
+  position: relative; overflow: hidden; padding-top: 64px;
+}
+.hero-bg {
+  position: absolute; inset: 0; z-index: 0;
+}
+.hero-bg canvas { width: 100%; height: 100%; }
+.hero-content { position: relative; z-index: 1; }
+.hero h1 {
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  max-width: 800px;
+}
+.hero h1 .accent { color: var(--accent-bright); }
+.hero .tagline {
+  font-size: clamp(1.05rem, 2vw, 1.3rem);
+  color: var(--silver);
+  max-width: 620px;
+  line-height: 1.7;
+  margin-bottom: 2.5rem;
+}
+.hero-stats {
+  display: flex; gap: 3rem; margin-top: 3rem; flex-wrap: wrap;
+}
+.hero-stat .num {
+  font-size: 2.5rem; font-weight: 700; color: var(--accent-bright);
+  font-family: var(--font-mono);
+}
+.hero-stat .label { font-size: 0.8rem; color: var(--steel); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 0.25rem; }
+.btn {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.75rem 1.75rem; border-radius: 8px;
+  font-weight: 600; font-size: 0.95rem;
+  transition: all 0.25s; cursor: pointer; border: none;
+}
+.btn-primary { background: var(--accent); color: var(--pure); }
+.btn-primary:hover { background: #2563eb; color: var(--pure); transform: translateY(-1px); box-shadow: 0 8px 30px rgba(59,130,246,0.3); }
+.btn-ghost { background: transparent; color: var(--pearl); border: 1px solid var(--slate); }
+.btn-ghost:hover { border-color: var(--silver); color: var(--pure); }
+.hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+/* ═══════ THESIS BAR ═══════ */
+.thesis-bar {
+  background: linear-gradient(135deg, var(--navy-mid) 0%, var(--navy-light) 100%);
+  border-top: 1px solid rgba(59,130,246,0.1);
+  border-bottom: 1px solid rgba(59,130,246,0.1);
+  padding: 4rem 0;
+}
+.thesis-bar blockquote {
+  font-family: var(--font-serif);
+  font-size: clamp(1.1rem, 2.2vw, 1.45rem);
+  color: var(--pearl);
+  line-height: 1.85;
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+  font-style: italic;
+  position: relative;
+  padding: 0 2rem;
+}
+.thesis-bar blockquote::before {
+  content: '';
+  display: block;
+  width: 60px; height: 3px;
+  background: var(--accent);
+  margin: 0 auto 2rem;
+}
+
+/* ═══════ DOMAIN GRID ═══════ */
+.domain-card {
+  background: var(--navy-mid);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 2rem;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.domain-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transition: transform 0.3s;
+  transform-origin: left;
+}
+.domain-card:hover { border-color: rgba(59,130,246,0.2); transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+.domain-card:hover::before { transform: scaleX(1); }
+.domain-icon {
+  width: 44px; height: 44px; border-radius: 10px;
+  background: rgba(59,130,246,0.1);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 1.25rem; font-size: 1.3rem;
+}
+.domain-card h3 { font-size: 1.1rem; margin-bottom: 0.75rem; }
+.domain-card p { font-size: 0.9rem; color: var(--steel); line-height: 1.6; }
+.domain-card .papers {
+  margin-top: 1rem; padding-top: 1rem;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  font-size: 0.8rem; color: var(--silver);
+  font-family: var(--font-mono);
+}
+
+/* ═══════ EVIDENCE TABLE ═══════ */
+.evidence-section { background: var(--navy-mid); }
+.evidence-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 0.88rem;
+}
+.evidence-table th {
+  text-align: left; padding: 0.85rem 1rem;
+  font-weight: 600; font-size: 0.75rem;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--accent-bright);
+  border-bottom: 2px solid var(--slate);
+  white-space: nowrap;
+}
+.evidence-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  vertical-align: top;
+}
+.evidence-table tr:hover td { background: rgba(59,130,246,0.03); }
+.evidence-table .paper-name { font-weight: 600; color: var(--pure); }
+.evidence-table .venue { font-family: var(--font-mono); font-size: 0.78rem; color: var(--silver); }
+.domain-tag {
+  display: inline-block; padding: 0.15rem 0.55rem;
+  border-radius: 4px; font-size: 0.72rem; font-weight: 600;
+  letter-spacing: 0.03em;
+}
+.tag-weather { background: rgba(20,184,166,0.15); color: var(--teal); }
+.tag-bio { background: rgba(168,85,247,0.15); color: #a855f7; }
+.tag-vision { background: rgba(59,130,246,0.15); color: var(--accent-bright); }
+.tag-timeseries { background: rgba(245,158,11,0.15); color: var(--amber); }
+.tag-robotics { background: rgba(244,63,94,0.15); color: var(--rose); }
+.tag-drug { background: rgba(34,197,94,0.15); color: #22c55e; }
+.tag-multi { background: rgba(139,92,246,0.15); color: #8b5cf6; }
+.tag-audio { background: rgba(236,72,153,0.15); color: #ec4899; }
+
+/* ═══════ COMPUTE SECTION ═══════ */
+.compute-section { position: relative; }
+.compute-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+@media (max-width: 900px) { .compute-grid { grid-template-columns: 1fr; } }
+.compute-card {
+  background: var(--navy-mid);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px; padding: 2rem;
+}
+.compute-card h4 { color: var(--pure); margin-bottom: 0.5rem; font-size: 1.05rem; }
+.compute-card p { font-size: 0.9rem; color: var(--steel); line-height: 1.65; }
+.compute-card .metric {
+  font-family: var(--font-mono); font-size: 2rem; font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+.metric-teal { color: var(--teal); }
+.metric-amber { color: var(--amber); }
+.metric-rose { color: var(--rose); }
+.metric-accent { color: var(--accent-bright); }
+
+/* ═══════ BOTTLENECK BARS ═══════ */
+.bottleneck-list { margin-top: 2rem; }
+.bottleneck-item { margin-bottom: 1.5rem; }
+.bottleneck-label {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 0.85rem; margin-bottom: 0.4rem;
+}
+.bottleneck-label span:first-child { font-weight: 600; color: var(--pearl); }
+.bottleneck-label span:last-child { font-family: var(--font-mono); color: var(--silver); font-size: 0.8rem; }
+.bottleneck-track {
+  height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden;
+}
+.bottleneck-fill {
+  height: 100%; border-radius: 4px;
+  transition: width 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  width: 0;
+}
+.bottleneck-fill.active { width: var(--w); }
+.fill-red { background: linear-gradient(90deg, var(--rose), #fb7185); }
+.fill-amber { background: linear-gradient(90deg, #d97706, var(--amber)); }
+.fill-teal { background: linear-gradient(90deg, var(--teal-dim), var(--teal)); }
+.fill-blue { background: linear-gradient(90deg, #2563eb, var(--accent-bright)); }
+
+
+/* ═══════ FOOTER ═══════ */
+footer {
+  padding: 3rem 0 2rem;
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+.footer-inner {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  flex-wrap: wrap; gap: 2rem;
+}
+.footer-brand { max-width: 300px; }
+.footer-brand p { font-size: 0.8rem; color: var(--steel); margin-top: 0.5rem; line-height: 1.6; }
+.footer-links { display: flex; gap: 3rem; }
+.footer-col h4 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--silver); margin-bottom: 0.75rem; }
+.footer-col a { display: block; font-size: 0.85rem; color: var(--steel); margin-bottom: 0.4rem; }
+.footer-col a:hover { color: var(--pearl); }
+.footer-bottom {
+  margin-top: 2rem; padding-top: 1.5rem;
+  border-top: 1px solid rgba(255,255,255,0.04);
+  font-size: 0.78rem; color: var(--steel);
+  display: flex; justify-content: space-between;
+}
+@media (max-width: 700px) {
+  .footer-inner { flex-direction: column; }
+  .footer-links { flex-direction: column; gap: 1.5rem; }
+  .footer-bottom { flex-direction: column; gap: 0.5rem; }
+}
+
+/* ═══════ SCROLL ANIMATIONS ═══════ */
+.fade-up {
+  opacity: 0; transform: translateY(30px);
+  transition: opacity 0.7s, transform 0.7s;
+}
+.fade-up.visible { opacity: 1; transform: translateY(0); }
+
+/* ═══════ TABLE RESPONSIVE ═══════ */
+.table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); }
+.table-wrap table { min-width: 700px; }
+
+/* ═══════ TOOLTIP ═══════ */
+.tooltip-trigger { position: relative; cursor: help; border-bottom: 1px dashed var(--steel); }
+.tooltip-trigger:hover::after {
+  content: attr(data-tip);
+  position: absolute; bottom: 120%; left: 50%; transform: translateX(-50%);
+  background: var(--navy-light); color: var(--pearl); padding: 0.5rem 0.75rem;
+  border-radius: 6px; font-size: 0.78rem; white-space: nowrap; z-index: 10;
+  border: 1px solid var(--slate);
+}
+
+/* Interactive filter tabs */
+.filter-tabs { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.filter-tab {
+  padding: 0.35rem 0.85rem; border-radius: 6px;
+  font-size: 0.78rem; font-weight: 600; cursor: pointer;
+  border: 1px solid var(--slate); background: transparent;
+  color: var(--silver); transition: all 0.2s;
+  font-family: var(--font-sans);
+}
+.filter-tab:hover { border-color: var(--accent); color: var(--accent-bright); }
+.filter-tab.active { background: var(--accent); border-color: var(--accent); color: var(--pure); }
+</style>
+</head>
+<body>
+
+<!-- ═══════ NAVIGATION ═══════ -->
+<nav id="nav">
+  <div class="nav-inner">
+    <a href="#" class="nav-brand">
+      <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="2" width="24" height="24" rx="4" stroke="#3b82f6" stroke-width="2"/>
+        <path d="M8 10h12M8 14h12M8 18h8" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="21" cy="18" r="3" fill="#3b82f6" opacity="0.6"/>
+      </svg>
+      Transformers Beyond Text
+    </a>
+    <div class="nav-links" id="navLinks">
+      <a href="#foundations">Foundations</a>
+      <a href="#domains">Beyond Language</a>
+      <a href="#evidence">Research</a>
+      <a href="#compute">Compute</a>
+    </div>
+    <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle menu">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+  </div>
+</nav>
+
+<!-- ═══════ HERO ═══════ -->
+<section class="hero" id="hero">
+  <div class="hero-bg"><canvas id="heroCanvas"></canvas></div>
+  <div class="container hero-content">
+    <span class="section-label">Transformers Beyond Text</span>
+    <h1>The architecture reshaping every industry <span class="accent">&mdash; and the infrastructure it demands.</span></h1>
+    <p class="tagline">Understanding the universal modeling engine &mdash; from language to weather to markets. How one class of model is becoming the operating system for complex, high-dimensional data.</p>
+    <div class="hero-actions">
+      <a href="#foundations" class="btn btn-primary">
+        Start reading
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h10m-4-4 4 4-4 4"/></svg>
+      </a>
+      <a href="#evidence" class="btn btn-ghost">View the evidence</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="num" id="counterDomains">0</div>
+        <div class="label">Domains covered</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num" id="counterPapers">0</div>
+        <div class="label">Papers cited</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num" id="counterX">0<span style="font-size:1.2rem">x</span></div>
+        <div class="label">Faster than physics sims</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ THESIS BAR ═══════ -->
+<div class="thesis-bar">
+  <div class="container">
+    <blockquote>
+      The transformer is not an AI for chatting. It is a general-purpose architecture for modeling relationships in sequential, high-dimensional data. Language was merely its first application. Every new domain that adopts it multiplies global demand for compute infrastructure.
+    </blockquote>
+  </div>
+</div>
+
+<!-- ═══════ FOUNDATIONS ═══════ -->
+<section id="foundations">
+  <div class="container">
+    <div class="fade-up">
+      <span class="section-label">01 &mdash; Foundations</span>
+      <h2>How Transformers Actually Work</h2>
+      <p class="lead" style="margin-bottom: 2.5rem;">The core mechanism has nothing to do with language. It is a way for a model to assess how much every element in a dataset matters for understanding every other element &mdash; simultaneously.</p>
+    </div>
+    <div class="grid-3 fade-up">
+      <div class="domain-card">
+        <div class="domain-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        </div>
+        <h3>Tokenization</h3>
+        <p>Any data &mdash; text, images, amino acids, atmospheric variables, stock prices &mdash; is converted into discrete tokens. The model operates on these tokens without knowing or caring what they represent.</p>
+      </div>
+      <div class="domain-card">
+        <div class="domain-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/><path d="M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4" opacity="0.4"/></svg>
+        </div>
+        <h3>Self-Attention</h3>
+        <p>Every token attends to every other token in the sequence. The model learns which relationships matter &mdash; nearby or distant, strong or weak &mdash; directly from data. This is the core innovation.</p>
+      </div>
+      <div class="domain-card">
+        <div class="domain-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"><path d="M3 17l6-6 4 4 8-8"/><circle cx="21" cy="7" r="2" fill="#60a5fa"/></svg>
+        </div>
+        <h3>Scaling Laws</h3>
+        <p>Empirically, larger models trained on more data reliably improve across every domain tested. This predictable relationship is what makes investment in compute infrastructure a rational bet.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ BEYOND LANGUAGE ═══════ -->
+<section id="domains" style="background: var(--navy-mid);">
+  <div class="container">
+    <div class="fade-up">
+      <span class="section-label">02 &mdash; Beyond Language</span>
+      <h2>Nine Domains. One Architecture.</h2>
+      <p class="lead" style="margin-bottom: 2.5rem;">Across weather prediction, protein folding, financial markets, robotics, and more &mdash; the same attention mechanism is matching or exceeding decades of domain-specific engineering.</p>
+    </div>
+    <div class="grid-3 fade-up">
+      <div class="domain-card">
+        <div class="domain-icon" style="background:rgba(20,184,166,0.1);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#14b8a6" stroke-width="2" stroke-linecap="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+        </div>
+        <h3>Weather &amp; Climate</h3>
+        <p>Pangu-Weather, GraphCast, and FourCastNet now outperform traditional numerical weather prediction across most variables, producing 10-day forecasts 45,000x faster.</p>
+        <div class="papers">Pangu-Weather &middot; GraphCast &middot; FourCastNet</div>
+      </div>
+      <div class="domain-card">
+        <div class="domain-icon" style="background:rgba(168,85,247,0.1);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+        </div>
+        <h3>Protein Folding</h3>
+        <p>AlphaFold2's Evoformer architecture solved the 50-year protein folding problem, predicting structures to near-atomic accuracy. Over 43,000 citations and counting.</p>
+        <div class="papers">AlphaFold 2 &middot; ProtTrans</div>
+      </div>
+      <div class="domain-card">
+        <div class="domain-icon" style="background:rgba(59,130,246,0.1);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L6 21"/></svg>
+        </div>
+        <h3>Computer Vision</h3>
+        <p>The Vision Transformer demonstrated that images can be processed as sequences of patches with no convolutional layers. CLIP, DINO, and DeiT extended this across the field.</p>
+        <div class="papers">ViT &middot; CLIP &middot; DINO &middot; DeiT</div>
+      </div>
+      <div class="domain-card">
+        <div class="domain-icon" style="background:rgba(245,158,11,0.1);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+        </div>
+        <h3>Financial Time Series</h3>
+        <p>Temporal Fusion Transformers handle complex mixes of static, future, and exogenous variables with interpretable attention weights. Informer achieves O(L log L) for extreme long-range forecasting.</p>
+        <div class="papers">TFT &middot; Informer</div>
+      </div>
+      <div class="domain-card">
+        <div class="domain-icon" style="background:rgba(244,63,94,0.1);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="2" stroke-linecap="round"><path d="M12 2l1 7h7l-5.5 4 2 7L12 16l-4.5 4 2-7L4 9h7z"/></svg>
+        </div>
+        <h3>Robotics &amp; Embodied AI</h3>
+        <p>RT-2 outputs motor commands as tokens in the same vocabulary as language. Gato handles 604 tasks across Atari, image captioning, chat, and physical manipulation.</p>
+        <div class="papers">RT-2 &middot; Gato</div>
+      </div>
+      <div class="domain-card">
+        <div class="domain-icon" style="background:rgba(34,197,94,0.1);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83"/><path d="M2 12h4M18 12h4" opacity="0.5"/></svg>
+        </div>
+        <h3>Drug Discovery</h3>
+        <p>DiffDock predicts how drugs bind to proteins with 38% accuracy, exceeding traditional software. The Molecular Transformer treats chemical reactions as translation problems at 90%+ accuracy.</p>
+        <div class="papers">DiffDock &middot; Molecular Transformer</div>
+      </div>
+      <div class="domain-card">
+        <div class="domain-icon" style="background:rgba(139,92,246,0.1);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 8h20M8 4v16"/></svg>
+        </div>
+        <h3>Multimodal Systems</h3>
+        <p>Perceiver processes images, point clouds, audio, and video with the same architecture. No domain-specific modifications. The attention mechanism is truly input-agnostic.</p>
+        <div class="papers">Perceiver &middot; CLIP</div>
+      </div>
+      <div class="domain-card">
+        <div class="domain-icon" style="background:rgba(236,72,153,0.1);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        </div>
+        <h3>Music &amp; Audio</h3>
+        <p>Jukebox generates coherent music with singing in raw audio using a 72-layer transformer. Even raw sensory signals yield to the architecture when properly tokenized.</p>
+        <div class="papers">Jukebox</div>
+      </div>
+      <div class="domain-card">
+        <div class="domain-icon" style="background:rgba(6,182,212,0.1);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10"/><path d="M12 6v6l4 2"/><path d="M22 2l-4 4M22 6l-4-4" opacity="0.5"/></svg>
+        </div>
+        <h3>Physics Simulation</h3>
+        <p>Fourier Neural Operators with attention learn to solve partial differential equations on arbitrary geometries, replacing expensive numerical solvers for fluid dynamics, materials, and climate systems.</p>
+        <div class="papers">FNO &middot; Geo-FNO</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ EVIDENCE TABLE ═══════ -->
+<section id="evidence" class="evidence-section">
+  <div class="container">
+    <div class="fade-up">
+      <span class="section-label">03 &mdash; Academic Evidence</span>
+      <h2>Peer-Reviewed Research</h2>
+      <p class="lead" style="margin-bottom: 1.5rem;">Every claim on this site is grounded in published research. Below are 16 foundational papers demonstrating transformers applied beyond text.</p>
+    </div>
+    <div class="fade-up">
+      <div class="filter-tabs" id="filterTabs">
+        <button class="filter-tab active" data-filter="all">All Domains</button>
+        <button class="filter-tab" data-filter="weather">Weather</button>
+        <button class="filter-tab" data-filter="bio">Biology</button>
+        <button class="filter-tab" data-filter="vision">Vision</button>
+        <button class="filter-tab" data-filter="timeseries">Time-Series</button>
+        <button class="filter-tab" data-filter="robotics">Robotics</button>
+        <button class="filter-tab" data-filter="drug">Drug Discovery</button>
+        <button class="filter-tab" data-filter="multi">Multimodal</button>
+        <button class="filter-tab" data-filter="audio">Audio</button>
+      </div>
+    </div>
+    <div class="table-wrap fade-up">
+      <table class="evidence-table" id="evidenceTable">
+        <thead>
+          <tr>
+            <th>Paper</th>
+            <th>Domain</th>
+            <th>Year</th>
+            <th>Key Result</th>
+            <th>Link</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-domain="weather"><td class="paper-name">Pangu-Weather<br><span class="venue">Nature</span></td><td><span class="domain-tag tag-weather">Weather</span></td><td>2023</td><td>First AI to outperform ECMWF IFS across all variables, 1hr&ndash;7day</td><td><a href="https://arxiv.org/abs/2211.02556" target="_blank">arXiv &rarr;</a></td></tr>
+          <tr data-domain="weather"><td class="paper-name">GraphCast<br><span class="venue">Science</span></td><td><span class="domain-tag tag-weather">Weather</span></td><td>2023</td><td>10-day forecasts in &lt;1 min. Outperforms HRES on 99.7% of variables</td><td><a href="https://www.science.org/doi/10.1126/science.adi2336" target="_blank">Science &rarr;</a></td></tr>
+          <tr data-domain="weather"><td class="paper-name">FourCastNet<br><span class="venue">NVIDIA</span></td><td><span class="domain-tag tag-weather">Weather</span></td><td>2022</td><td>ViT + Fourier operators. 45,000x faster, 12,000x cheaper than NWP</td><td><a href="https://arxiv.org/abs/2202.11214" target="_blank">arXiv &rarr;</a></td></tr>
+          <tr data-domain="bio"><td class="paper-name">AlphaFold 2<br><span class="venue">Nature</span></td><td><span class="domain-tag tag-bio">Biology</span></td><td>2021</td><td>Solved protein folding. Median error &lt;1&angst;. 43,000+ citations</td><td><a href="https://www.nature.com/articles/s41586-021-03819-2" target="_blank">Nature &rarr;</a></td></tr>
+          <tr data-domain="bio"><td class="paper-name">ProtTrans<br><span class="venue">Rostlab</span></td><td><span class="domain-tag tag-bio">Biology</span></td><td>2020</td><td>Transformer on 217M protein sequences. Learns biology from structure alone</td><td><a href="https://github.com/agemagician/ProtTrans" target="_blank">GitHub &rarr;</a></td></tr>
+          <tr data-domain="vision"><td class="paper-name">Vision Transformer (ViT)<br><span class="venue">ICLR 2021</span></td><td><span class="domain-tag tag-vision">Vision</span></td><td>2021</td><td>Pure transformer on image patches outperforms CNNs on ImageNet</td><td><a href="https://arxiv.org/abs/2010.11929" target="_blank">arXiv &rarr;</a></td></tr>
+          <tr data-domain="vision"><td class="paper-name">CLIP<br><span class="venue">ICML 2021</span></td><td><span class="domain-tag tag-vision">Vision</span></td><td>2021</td><td>Vision + text transformers. Zero-shot transfer on 400M image-text pairs</td><td><a href="https://openai.com/index/clip/" target="_blank">OpenAI &rarr;</a></td></tr>
+          <tr data-domain="vision"><td class="paper-name">DINO<br><span class="venue">ICCV 2021</span></td><td><span class="domain-tag tag-vision">Vision</span></td><td>2021</td><td>Self-supervised ViT discovers semantic segmentation with no labels</td><td><a href="https://arxiv.org/abs/2104.14294" target="_blank">arXiv &rarr;</a></td></tr>
+          <tr data-domain="vision"><td class="paper-name">DeiT<br><span class="venue">ICML 2021</span></td><td><span class="domain-tag tag-vision">Vision</span></td><td>2021</td><td>Data-efficient ViT. 83.1% ImageNet with only ImageNet training</td><td><a href="https://arxiv.org/abs/2012.12877" target="_blank">arXiv &rarr;</a></td></tr>
+          <tr data-domain="timeseries"><td class="paper-name">Temporal Fusion Transformer<br><span class="venue">Intl. J. Forecasting</span></td><td><span class="domain-tag tag-timeseries">Time-Series</span></td><td>2021</td><td>Multi-horizon forecasting with interpretable attention over mixed variables</td><td><a href="https://arxiv.org/abs/1912.09363" target="_blank">arXiv &rarr;</a></td></tr>
+          <tr data-domain="timeseries"><td class="paper-name">Informer<br><span class="venue">AAAI 2021</span></td><td><span class="domain-tag tag-timeseries">Time-Series</span></td><td>2021</td><td>ProbSparse attention: O(L log L) for extreme long-range forecasting</td><td><a href="https://arxiv.org/abs/2012.07436" target="_blank">arXiv &rarr;</a></td></tr>
+          <tr data-domain="robotics"><td class="paper-name">RT-2<br><span class="venue">DeepMind</span></td><td><span class="domain-tag tag-robotics">Robotics</span></td><td>2023</td><td>Vision-language-action model. Motor commands as tokens. 62% generalization</td><td><a href="https://robotics-transformer2.github.io/" target="_blank">Project &rarr;</a></td></tr>
+          <tr data-domain="robotics"><td class="paper-name">Gato<br><span class="venue">TMLR</span></td><td><span class="domain-tag tag-robotics">Robotics</span></td><td>2022</td><td>Single transformer handles 604 tasks: Atari, robotics, chat, vision</td><td><a href="https://arxiv.org/abs/2205.06175" target="_blank">arXiv &rarr;</a></td></tr>
+          <tr data-domain="drug"><td class="paper-name">DiffDock<br><span class="venue">MIT / ICLR</span></td><td><span class="domain-tag tag-drug">Drug Discovery</span></td><td>2023</td><td>Transformer diffusion for molecular docking. 38% vs. 23% traditional</td><td><a href="https://arxiv.org/abs/2210.01776" target="_blank">arXiv &rarr;</a></td></tr>
+          <tr data-domain="drug"><td class="paper-name">Molecular Transformer<br><span class="venue">ACS Cent. Sci.</span></td><td><span class="domain-tag tag-drug">Drug Discovery</span></td><td>2019</td><td>Chemical reactions as translation. 90%+ accuracy. Used by thousands</td><td><a href="https://pubs.acs.org/doi/10.1021/acscentsci.9b00576" target="_blank">ACS &rarr;</a></td></tr>
+          <tr data-domain="multi"><td class="paper-name">Perceiver<br><span class="venue">ICML 2021</span></td><td><span class="domain-tag tag-multi">Multimodal</span></td><td>2021</td><td>Modality-agnostic transformer. Same arch for images, audio, point clouds</td><td><a href="https://arxiv.org/abs/2103.03206" target="_blank">arXiv &rarr;</a></td></tr>
+          <tr data-domain="audio"><td class="paper-name">Jukebox<br><span class="venue">OpenAI</span></td><td><span class="domain-tag tag-audio">Audio</span></td><td>2020</td><td>72-layer transformer generates music with singing from raw audio</td><td><a href="https://arxiv.org/abs/2005.00341" target="_blank">arXiv &rarr;</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ COMPUTE & INFRASTRUCTURE ═══════ -->
+<section id="compute" class="compute-section">
+  <div class="container">
+    <div class="fade-up">
+      <span class="section-label">04 &mdash; Compute &amp; Infrastructure</span>
+      <h2>The Scale of What's Coming</h2>
+      <p class="lead" style="margin-bottom: 2.5rem;">Every new domain that adopts transformer-based modeling creates independent, additive demand for training and inference compute. The aggregate is not linear growth &mdash; it is combinatorial expansion.</p>
+    </div>
+
+    <div class="compute-grid fade-up">
+      <div class="compute-card">
+        <div class="metric metric-teal">45,000x</div>
+        <h4>Faster Than Physics Simulations</h4>
+        <p>AI weather models like FourCastNet produce forecasts 45,000 times faster than traditional numerical weather prediction, but each model requires thousands of GPU-hours to train on decades of atmospheric data.</p>
+      </div>
+      <div class="compute-card">
+        <div class="metric metric-amber">604</div>
+        <h4>Tasks in One Model</h4>
+        <p>DeepMind's Gato handles 604 distinct tasks with a single transformer. Scaling to production across all task types implies inference infrastructure operating continuously across multiple modalities.</p>
+      </div>
+      <div class="compute-card">
+        <div class="metric metric-rose">5,616</div>
+        <h4>GPUs for Protein Pre-training</h4>
+        <p>ProtTrans required 5,616 GPUs on the Summit supercomputer to pre-train on 217 million protein sequences. Biology is just one domain. Weather, chemistry, and robotics each demand comparable resources.</p>
+      </div>
+      <div class="compute-card">
+        <div class="metric metric-accent">10<span style="font-size:1rem">+</span></div>
+        <h4>Independent Demand Sources</h4>
+        <p>Weather, biology, vision, finance, robotics, drug discovery, materials science, energy, defense, and more. Each domain is additive. The world will build all of these systems, not choose among them.</p>
+      </div>
+    </div>
+
+    <div class="fade-up" style="margin-top: 3rem;">
+      <h3 style="margin-bottom: 1.5rem;">Infrastructure Bottlenecks</h3>
+      <div class="bottleneck-list">
+        <div class="bottleneck-item">
+          <div class="bottleneck-label"><span>Advanced GPU / Accelerator Supply</span><span>Critical</span></div>
+          <div class="bottleneck-track"><div class="bottleneck-fill fill-red" style="--w: 95%;"></div></div>
+        </div>
+        <div class="bottleneck-item">
+          <div class="bottleneck-label"><span>High-Bandwidth Memory (HBM)</span><span>Severe</span></div>
+          <div class="bottleneck-track"><div class="bottleneck-fill fill-red" style="--w: 88%;"></div></div>
+        </div>
+        <div class="bottleneck-item">
+          <div class="bottleneck-label"><span>Data Center Energy Procurement</span><span>Severe</span></div>
+          <div class="bottleneck-track"><div class="bottleneck-fill fill-amber" style="--w: 82%;"></div></div>
+        </div>
+        <div class="bottleneck-item">
+          <div class="bottleneck-label"><span>TSMC Advanced Node Capacity</span><span>Critical</span></div>
+          <div class="bottleneck-track"><div class="bottleneck-fill fill-red" style="--w: 92%;"></div></div>
+        </div>
+        <div class="bottleneck-item">
+          <div class="bottleneck-label"><span>Cooling Infrastructure</span><span>High</span></div>
+          <div class="bottleneck-track"><div class="bottleneck-fill fill-amber" style="--w: 72%;"></div></div>
+        </div>
+        <div class="bottleneck-item">
+          <div class="bottleneck-label"><span>High-Speed Network Fabric</span><span>Moderate</span></div>
+          <div class="bottleneck-track"><div class="bottleneck-fill fill-teal" style="--w: 58%;"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ FOOTER ═══════ -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <strong style="color: var(--pure); font-size: 1rem;">Transformers Beyond Text</strong>
+        <p>Understanding the universal modeling engine &mdash; from language to weather to markets. Evidence-driven analysis of the architecture reshaping every industry.</p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Sections</h4>
+          <a href="#foundations">Foundations</a>
+          <a href="#domains">Beyond Language</a>
+          <a href="#evidence">Research</a>
+          <a href="#compute">Compute</a>
+        </div>
+        <div class="footer-col">
+          <h4>Resources</h4>
+          <a href="#">Research Tracker</a>
+          <a href="#">Compute Calculator</a>
+          <a href="#">GPU Demand Dashboard</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 Transformers Beyond Text. All rights reserved.</span>
+      <span>Built with rigor. No hype.</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══════ SCRIPTS ═══════ -->
+<script>
+// ── NAV SCROLL ──
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 50);
+});
+
+// ── MOBILE TOGGLE ──
+document.getElementById('mobileToggle').addEventListener('click', () => {
+  document.getElementById('navLinks').classList.toggle('open');
+});
+
+// ── SCROLL ANIMATIONS ──
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+// ── BOTTLENECK BARS ──
+const barObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.querySelectorAll('.bottleneck-fill').forEach(bar => bar.classList.add('active'));
+    }
+  });
+}, { threshold: 0.3 });
+document.querySelectorAll('.bottleneck-list').forEach(el => barObserver.observe(el));
+
+// ── COUNTER ANIMATION ──
+function animateCounter(el, target, suffix = '') {
+  let current = 0;
+  const step = Math.max(1, Math.floor(target / 60));
+  const interval = setInterval(() => {
+    current = Math.min(current + step, target);
+    el.innerHTML = current.toLocaleString() + suffix;
+    if (current >= target) clearInterval(interval);
+  }, 25);
+}
+const counterObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      animateCounter(document.getElementById('counterDomains'), 9);
+      animateCounter(document.getElementById('counterPapers'), 16);
+      animateCounter(document.getElementById('counterX'), 45000, '<span style="font-size:1.2rem">x</span>');
+      counterObserver.disconnect();
+    }
+  });
+}, { threshold: 0.5 });
+counterObserver.observe(document.querySelector('.hero-stats'));
+
+// ── EVIDENCE FILTER ──
+document.getElementById('filterTabs').addEventListener('click', (e) => {
+  if (!e.target.classList.contains('filter-tab')) return;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  e.target.classList.add('active');
+  const filter = e.target.dataset.filter;
+  document.querySelectorAll('#evidenceTable tbody tr').forEach(row => {
+    row.style.display = (filter === 'all' || row.dataset.domain === filter) ? '' : 'none';
+  });
+});
+
+// ── HERO CANVAS: NETWORK GRAPH ──
+(function() {
+  const canvas = document.getElementById('heroCanvas');
+  const ctx = canvas.getContext('2d');
+  let w, h, nodes = [], mouse = { x: -1000, y: -1000 };
+
+  function resize() {
+    w = canvas.width = canvas.parentElement.offsetWidth;
+    h = canvas.height = canvas.parentElement.offsetHeight;
+  }
+
+  function init() {
+    resize();
+    nodes = [];
+    const count = Math.min(80, Math.floor(w * h / 12000));
+    for (let i = 0; i < count; i++) {
+      nodes.push({
+        x: Math.random() * w, y: Math.random() * h,
+        vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4,
+        r: Math.random() * 2 + 1
+      });
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, w, h);
+    // connections
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const dx = nodes[i].x - nodes[j].x;
+        const dy = nodes[i].y - nodes[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 160) {
+          const alpha = (1 - dist / 160) * 0.12;
+          ctx.strokeStyle = `rgba(59, 130, 246, ${alpha})`;
+          ctx.lineWidth = 0.5;
+          ctx.beginPath();
+          ctx.moveTo(nodes[i].x, nodes[i].y);
+          ctx.lineTo(nodes[j].x, nodes[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+    // nodes
+    nodes.forEach(n => {
+      const dx = n.x - mouse.x;
+      const dy = n.y - mouse.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const glow = dist < 200 ? (1 - dist / 200) * 0.5 : 0;
+      ctx.fillStyle = `rgba(96, 165, 250, ${0.3 + glow})`;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r + glow * 2, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    // update
+    nodes.forEach(n => {
+      n.x += n.vx; n.y += n.vy;
+      if (n.x < 0 || n.x > w) n.vx *= -1;
+      if (n.y < 0 || n.y > h) n.vy *= -1;
+    });
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', () => { resize(); });
+  canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = e.clientX - rect.left;
+    mouse.y = e.clientY - rect.top;
+  });
+  canvas.addEventListener('mouseleave', () => { mouse.x = -1000; mouse.y = -1000; });
+
+  init();
+  draw();
+})();
+</script>
+
+</body>
+</html>
